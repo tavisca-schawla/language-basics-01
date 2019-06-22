@@ -23,105 +23,39 @@ namespace Tavisca.Bootcamp.LanguageBasics.Exercise1
 
         public static int FindDigit(string equation)
         {
-            int result = -1, defected = 2, defectedIndex = -1;
-            string A, B, C;
-            A = B = C = string.Empty;
+            int result = -1, defected, defectedIndex;
+            defected = defectedIndex = default(int);
+            string[] components = equation.Split(new[] { '*', '=' }, StringSplitOptions.RemoveEmptyEntries);
+            //storing equation components in separate variables for readibility.
+            string A = components[0];
+            string B = components[1];
+            string C = components[2];
 
-            for (int i = 0; i < equation.Length; i++)
+            //Determining the defected component index and missing digit index
+            foreach (var comp in components)
             {
-                if (equation[i] == '*')
+                if (comp.IndexOf('?') > -1)
                 {
-                    if (C.IndexOf('?') > -1)
-                    {
-                        defectedIndex = C.IndexOf('?');
-                        defected = 0;
-                    }
-
-                    A = C;
-                    C = string.Empty;
-                }
-                else if (equation[i] == '=')
-                {
-                    if (C.IndexOf('?') > -1)
-                    {
-                        defectedIndex = C.IndexOf('?');
-                        defected = 1;
-                    }
-
-                    B = C;
-                    C = string.Empty;
-                }
-                else
-                {
-                    C += equation[i];
+                    defectedIndex = comp.IndexOf('?');
+                    defected = Array.IndexOf(components, comp);
+                    break;
                 }
             }
 
-            if (defectedIndex == -1)
-            {
-                defectedIndex = C.IndexOf('?');
-            }
+            //Determining expected value of the defected.
+            int b = (defected != 1) ? int.Parse(B) : int.Parse(A);
+            int c = (defected != 2) ? int.Parse(C) : int.Parse(A);
+            decimal product = (defected == 2) ? b * c : (decimal)c / (decimal)b;
 
-            if (defected == 0)
+            for (int i = 1; i < 10; i++)
             {
-                int b = int.Parse(B);
-                int c = int.Parse(C);
-                int product = c / b;
-
-                for (int i = 1; i < 10; i++)
+                var str = new StringBuilder(components[defected]);
+                str.Remove(defectedIndex, 1);
+                str.Insert(defectedIndex, i);
+                var tem1 = int.Parse(str.ToString());
+                if (tem1 == product)
                 {
-                    var str = new StringBuilder(A);
-                    str.Remove(defectedIndex, 1);
-                    str.Insert(defectedIndex, i);
-                    A = str.ToString();
-                    var tem1 = int.Parse(A);
-
-                    if (tem1 == product)
-                    {
-                        result = i;
-                    }
-                }
-            }
-
-            if (defected == 1)
-            {
-                int a = int.Parse(A);
-                int c = int.Parse(C);
-                decimal product = (decimal)c / (decimal)a;
-
-                for (int i = 1; i < 10; i++)
-                {
-                    var str = new StringBuilder(B);
-                    str.Remove(defectedIndex, 1);
-                    str.Insert(defectedIndex, i);
-                    B = str.ToString();
-                    var tem1 = decimal.Parse(B);
-
-                    if (tem1 == product)
-                    {
-                        result = i;
-                    }
-                }
-            }
-
-            if (defected == 2)
-            {
-                int b = int.Parse(B);
-                int a = int.Parse(A);
-                int product = a * b;
-
-                for (int i = 1; i < 10; i++)
-                {
-                    var str = new StringBuilder(C);
-                    str.Remove(defectedIndex, 1);
-                    str.Insert(defectedIndex, i);
-                    C = str.ToString();
-                    var tem1 = int.Parse(C);
-
-                    if (tem1 == product)
-                    {
-                        result = i;
-                    }
+                    result = i;
                 }
             }
 
