@@ -5,6 +5,11 @@ namespace Tavisca.Bootcamp.LanguageBasics.Exercise1
 {
     class FixMultiplication
     {
+        static int Defected, DefectedIndex;
+        static string[] EquationComponents;
+        static string OperandA;
+        static string OperandB;
+        static string ProductC;
         static void Main(string[] args)
         {
             Test("42*47=1?74", 9);
@@ -21,45 +26,57 @@ namespace Tavisca.Bootcamp.LanguageBasics.Exercise1
             Console.WriteLine($"{args} : {result}");
         }
 
-        public static int FindDigit(string equation)
+        public static void ExtractEquationComponents(string equation)
         {
-            int result = -1, defected, defectedIndex;
-            defected = defectedIndex = default(int);
-            string[] components = equation.Split(new[] { '*', '=' }, StringSplitOptions.RemoveEmptyEntries);
-            //storing equation components in separate variables for readibility.
-            string A = components[0];
-            string B = components[1];
-            string C = components[2];
+            EquationComponents = equation.Split(new[] { '*', '=' }, StringSplitOptions.RemoveEmptyEntries);
+            OperandA = EquationComponents[0];
+            OperandB = EquationComponents[1];
+            ProductC = EquationComponents[2];
+        }
 
-            //Determining the defected component index and missing digit index
-            foreach (var comp in components)
+        public static void GetDefectedValue()
+        {
+            foreach (var comp in EquationComponents)
             {
                 if (comp.IndexOf('?') > -1)
                 {
-                    defectedIndex = comp.IndexOf('?');
-                    defected = Array.IndexOf(components, comp);
+                    SetDefectedIndex(comp);
+                    Defected = Array.IndexOf(EquationComponents, comp);
                     break;
                 }
             }
+        }
 
-            //Determining expected value of the defected.
-            int b = (defected != 1) ? int.Parse(B) : int.Parse(A);
-            int c = (defected != 2) ? int.Parse(C) : int.Parse(A);
-            decimal product = (defected == 2) ? b * c : (decimal)c / (decimal)b;
+        public static void SetDefectedIndex(string defectedValue)
+        {
+            DefectedIndex = defectedValue.IndexOf('?');
+        }
+        public static int FindDigit(string equation)
+        {
+            ExtractEquationComponents(equation);
+            GetDefectedValue();
+            return DetermineMissingDigit();
+        }
+        public static int DetermineMissingDigit()
+        {
+            int b = (Defected != 1) ? int.Parse(OperandB) : int.Parse(OperandA);
+            int c = (Defected != 2) ? int.Parse(ProductC) : int.Parse(OperandA);
 
-            for (int i = 1; i < 10; i++)
+            try
             {
-                var str = new StringBuilder(components[defected]);
-                str.Remove(defectedIndex, 1);
-                str.Insert(defectedIndex, i);
-                var tem1 = int.Parse(str.ToString());
-                if (tem1 == product)
+                decimal product = (Defected == 2) ? b * c : (decimal)c / (decimal)b;
+                if (EquationComponents[Defected].Length != product.ToString().Length)
                 {
-                    result = i;
+                    return -1;
                 }
-            }
 
-            return result;
+                return (int)char.GetNumericValue(product.ToString()[DefectedIndex]);
+            }
+            catch (DivideByZeroException ex)
+            {
+                Console.WriteLine("{0}", ex);
+                return -1;
+            }
         }
     }
 }
